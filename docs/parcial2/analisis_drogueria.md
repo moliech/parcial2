@@ -251,3 +251,59 @@ $user->assignRole(['regente', 'cajero']);
 #### 2. ¿Qué rol elegiría al iniciar sesión?
 El usuario inicia sesión seleccionando el rol operativo de **`cajero`** para sus labores de atención en mostrador y facturación POS.  
 Bajo los principios de control interno y buenas prácticas farmacéuticas, si durante su turno como cajero se presenta una venta de medicamentos de control especial, la transacción **no debe autoautorizarse silenciosamente**: el sistema debe solicitar la confirmación de credenciales técnicas de regente o exigir la intervención del regente de turno de apoyo, dejando un registro explícito en el log de auditoría para garantizar que no se eludan los controles de separación de funciones.
+
+---
+
+## 7. Evidencias de la Implementación (Punto 4)
+
+A continuación se presentan las evidencias directas del código fuente, estructura de base de datos y validaciones transaccionales en Laravel Tinker conforme a la rúbrica del parcial:
+
+### 7.1 Estructura de la Tabla `lots` en MySQL
+Captura de la ejecución del comando `DESCRIBE lots;` verificando tipos de datos (`bigint unsigned`, `varchar(100)`, `date`, `int unsigned`) e índices clave:
+
+![Estructura de la tabla lots en MySQL](capturas/Captura1.png)
+
+---
+
+### 7.2 Código Fuente de los Componentes Desarrollados
+
+#### A. Modelo `Lot.php`
+Implementación de los atributos masivos (`$fillable`), conversión de tipos (`$casts` para `date` e `integer`) y relación `belongsTo(Product::class)`:
+
+![Código del Modelo Lot](capturas/Captura2.png)
+
+#### B. Seeder de Seguridad `DrogueriaRolesSeeder.php`
+Definición e inicialización de la matriz de permisos y roles (`admin`, `regente`, `cajero`, `auxiliar-bodega`) mediante el paquete Spatie:
+
+![Código del Seeder DrogueriaRolesSeeder](capturas/Captura3.png)
+
+#### C. Servicio Transaccional `DispensingService.php`
+Servicio encargado del despacho con lógica FEFO, validación de caducidad, bloqueo pesimista y atomicidad mediante `DB::transaction()`:
+
+![Código del Servicio DispensingService](capturas/Captura4.png)
+
+---
+
+### 7.3 Pruebas de Funcionamiento en Laravel Tinker
+
+#### A. Estado Inicial de Lotes (Antes del Despacho)
+Creación del escenario de pruebas con tres lotes para el producto *Amoxicilina 500mg*:
+1. `LOT-EXP-01` (Vencido hace 15 días, cantidad: 10).
+2. `LOT-PROX-02` (Próximo a vencer en 30 días, cantidad: 5).
+3. `LOT-LEJ-03` (Vence en 1 año, cantidad: 15).
+
+![Lotes antes del despacho](capturas/Captura5.png)
+
+#### B. Despacho Aplicando FEFO (Después del Despacho)
+Se solicitan **8 unidades** mediante `$service->dispense($prod, 8)`. El sistema:
+- Ignora por completo el lote vencido `LOT-EXP-01` (permanece con 10 unidades).
+- Consume la totalidad del lote más próximo `LOT-PROX-02` (5 unidades descontadas, saldo: 0).
+- Descuenta las 3 unidades restantes del lote `LOT-LEJ-03` (saldo resultante: 12 unidades).
+
+![Lotes después del despacho](capturas/Captura6.png)
+
+#### C. Control de Excepción al Superar Stock Vigente
+Se solicita una dispensación de **20 unidades** cuando el inventario vigente disponible es de únicamente 12 unidades. El sistema bloquea la operación y lanza de forma controlada la excepción `ValidationException`:
+
+![Error de validación por stock insuficiente](capturas/Captura7.png)
+

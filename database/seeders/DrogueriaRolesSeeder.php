@@ -29,7 +29,7 @@ class DrogueriaRolesSeeder extends Seeder
             Permission::findOrCreate($permission, 'web');
         }
 
-        // 2. Roles y Sincronización Estricta
+        // 2. Roles y Sincronización
         // ROL 1: Administrador (Dueño) -> Sin permiso de 'recibir-lotes' (Segregación de funciones)
         $admin = Role::findOrCreate('admin', 'web');
         $admin->syncPermissions([
