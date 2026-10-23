@@ -16,8 +16,8 @@ class Client extends Model
         'address'
     ];
 
-    public function pets(): HasMany
+    public function sales(): HasMany
     {
-        return $this->hasMany(Pet::class);
+        return $this->hasMany(Sale::class);
     }
 }

@@ -15,9 +15,11 @@ return new class extends Migration
             $table->string('name', 150);
             $table->decimal('sale_price', 10, 2);
             $table->integer('current_stock')->default(0);
+            $table->integer('stock')->default(0);
             $table->integer('minimum_stock')->default(5);
             $table->boolean('active')->default(true);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

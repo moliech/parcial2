@@ -31,10 +31,10 @@ class Sale extends Model
         ];
     }
 
-    // Relación con el Cliente / Propietario de Mascota
+    // Relación con el Cliente
     public function client()
     {
-        return $this->belongsTo(Owner::class, 'client_id');
+        return $this->belongsTo(Client::class, 'client_id');
     }
 
     // Relación con el Vendedor / Usuario

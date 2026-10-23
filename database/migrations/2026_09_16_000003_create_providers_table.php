@@ -14,7 +14,10 @@ return new class extends Migration
             $table->string('company_name', 150);
             $table->string('contact_person', 100)->nullable();
             $table->string('phone', 20)->nullable();
+            $table->string('email', 100)->nullable();
+            $table->string('address', 200)->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

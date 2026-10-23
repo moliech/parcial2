@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('sales', function (Blueprint $table) {
             $table->id();
             $table->string('invoice_number', 20)->unique();
-            $table->foreignId('client_id')->constrained('owners')->onDelete('restrict'); // Conectado a los propietarios/clientes
+            $table->foreignId('client_id')->constrained('clients')->onDelete('restrict');
             $table->foreignId('user_id')->constrained('users')->onDelete('restrict');
             $table->date('sale_date');
             $table->decimal('subtotal', 14, 2)->default(0);
